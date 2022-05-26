@@ -1,8 +1,8 @@
 'use strict';
 
-const path = require('path').resolve(__dirname, '../src/');
+const cpath = require('path').resolve(__dirname, '../src/');
 const Buffer = require('buffer').Buffer;
-const torrentParser = require(path + '/torrentParser.js');
+const torrentParser = require(cpath + '/torrentParser.js');
 
 module.exports.buildHandshake = torrent => {
   const buf = Buffer.alloc(68);

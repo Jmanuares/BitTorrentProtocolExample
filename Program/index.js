@@ -1,14 +1,15 @@
 'use strict';
 
-const path = require('path').resolve(__dirname, '../Program/');
+const cpath = require('path').resolve(__dirname, '../Program/');
 
-const tracker = require(path + '/src/tracker.js');
-const torrentParser = require(path + '/src/torrentParser.js');
-const download = require(path + '/src/download.js');
+const tracker = require(cpath + '/src/tracker.js');
+const torrentParser = require(cpath + '/src/torrentParser.js');
+const download = require(cpath + '/src/download.js');
 
 
 
 const torrent = torrentParser.open(process.argv[2]);
+console.log("Se inicializo la descarga")
 
 tracker.getPeers(torrent, peers => {
     console.log('list of peers: ', peers);

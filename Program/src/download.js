@@ -1,17 +1,17 @@
 'use strict';
 
 const net = require('net');
-const path = require('path').resolve(__dirname, '../src/');
-const tracker = require(path + '/tracker.js');
-const message = require(path + '/request.js');
-const Queue = require(path + '/queue.js');
+const cpath = require('path').resolve(__dirname, '../src/');
+const tracker = require(cpath + '/tracker.js');
+const message = require(cpath + '/request.js');
+const Queue = require(cpath + '/queue.js');
 
 
-module.exports = torrent => {
+module.exports = (torrent, path) => {
     tracker.getPeers(torrent, peers => {
-      
-      const pieces = new Pieces(torrent);
-      peers.forEach(peer => download(peer, torrent, pieces));
+        const pieces = new Pieces(torrent);
+        const file = fs.openSync(path, 'w');
+        peers.forEach(peer => download(peer, torrent, pieces, file));
     });
   };
 
@@ -71,13 +71,41 @@ function unchokeHandler() {
 }
 
 function haveHandler() {
-    // ...
+    const pieceIndex = payload.readUInt32BE(0);
+    const queueEmpty = queue.length === 0;
+    queue.queue(pieceIndex);
+    if (queueEmpty) requestPiece(socket, pieces, queue);
 }
 
 function bitfieldHandler() {
     // ...
 }
 
-function pieceHandler() {
-    // ...
+function pieceHandler(socket, pieces, queue, torrent, file, pieceResp) {
+    console.log(pieceResp);
+    pieces.addReceived(pieceResp);
+
+    const offset = pieceResp.index * torrent.info['piece length'] + pieceResp.begin;
+    fs.write(file, pieceResp.block, 0, pieceResp.block.length, offset, () => {});
+
+    if (pieces.isDone()) {
+        console.log('DONE!');
+        socket.end();
+        try { fs.closeSync(file); } catch(e) {}
+    } else {
+        requestPiece(socket,pieces, queue);
+    }
 }
+
+function requestPiece(socket, pieces, queue) {
+    if (queue.choked) return null;
+  
+    while (queue.length()) {
+      const pieceBlock = queue.deque();
+      if (pieces.needed(pieceBlock)) {
+        socket.write(message.buildRequest(pieceBlock));
+        pieces.addRequested(pieceBlock);
+        break;
+      }
+    }
+  }

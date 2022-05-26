@@ -1,11 +1,11 @@
 'use strict';
 
-const path = require('path').resolve(__dirname, '../src/');
+const cpath = require('path').resolve(__dirname, '../src/');
 const dgram = require('dgram');
 const Buffer = require('buffer').Buffer;
 const urlParse = require('url').parse;
-const torrentParser = require(path + '/torrentParser.js');
-const util = require(path + '/util.js');
+const torrentParser = require(cpath + '/torrentParser.js');
+const util = require(cpath + '/util.js');
 
 const crypto = require('crypto');
 
