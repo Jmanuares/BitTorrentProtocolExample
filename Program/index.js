@@ -11,6 +11,4 @@ const download = require(cpath + '/src/download.js');
 const torrent = torrentParser.open(process.argv[2]);
 console.log("Se inicializo la descarga")
 
-tracker.getPeers(torrent, peers => {
-    console.log('list of peers: ', peers);
-});
+download(torrent, torrent.info.name);
