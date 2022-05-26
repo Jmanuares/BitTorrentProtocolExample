@@ -2,7 +2,6 @@
 
 const cpath = require('path').resolve(__dirname, '../Program/');
 
-const tracker = require(cpath + '/src/tracker.js');
 const torrentParser = require(cpath + '/src/torrentParser.js');
 const download = require(cpath + '/src/download.js');
 
