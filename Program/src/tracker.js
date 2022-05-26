@@ -103,7 +103,7 @@ function parseAnnounceResp(resp) {
     function group(iterable, groupSize) {
         let groups = [];
         for (let i = 0; i < iterable.length; i += groupSize) {
-          groups.push(iterable.slice(i, i + groupSize));
+            groups.push(iterable.slice(i, i + groupSize));
         }
         return groups;
       }
@@ -114,10 +114,10 @@ function parseAnnounceResp(resp) {
         leechers: resp.readUInt32BE(8),
         seeders: resp.readUInt32BE(12),
         peers: group(resp.slice(20), 6).map(address => {
-          return {
-            ip: address.slice(0, 4).join('.'),
-            port: address.readUInt16BE(4)
-          }
+            return {
+                ip: address.slice(0, 4).join('.'),
+                port: address.readUInt16BE(4)
+            }
         })
       }
 }
