@@ -4,13 +4,16 @@ const net = require('net');
 const path = require('path').resolve(__dirname, '../src/');
 const tracker = require(path + '/tracker.js');
 const message = require(path + '/request.js');
+const Queue = require(path + '/queue.js');
 
 
 module.exports = torrent => {
     tracker.getPeers(torrent, peers => {
-        peers.forEach(download);
+      
+      const pieces = new Pieces(torrent);
+      peers.forEach(peer => download(peer, torrent, pieces));
     });
-};
+  };
 
 function download(peer) {
     const socket = net.Socket();
@@ -18,7 +21,9 @@ function download(peer) {
     socket.connect(peer.port, peer.ip, () => {
         socket.write(message.buildHandshake(torrent));
     });
-    onWholeMsg(socket, msg => msgHandler(msg, socket));
+
+    const queue = new Queue(torrent);
+    onWholeMsg(socket, msg => msgHandler(msg, socket, pieces, queue));
 }
 
 function onWholeMsg(socket, callback) {
@@ -39,7 +44,17 @@ function onWholeMsg(socket, callback) {
 }
 
 function msgHandler(msg, socket) {
-    if (isHandshake(msg)) socket.write(message.buildInterested());
+    if (isHandshake(msg)) {
+        socket.write(message.buildInterested());
+    } else {
+        const m = message.parse(msg);
+
+        if (m.id === 0) chokeHandler();
+        if (m.id === 1) unchokeHandler();
+        if (m.id === 4) haveHandler(m.payload);
+        if (m.id === 5) bitfieldHandler(m.payload);
+        if (m.id === 7) pieceHandler(m.payload);
+    }
 }
   
 function isHandshake(msg) {
